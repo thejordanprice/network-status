@@ -100,7 +100,7 @@ def ping_ip(ip: str):
     try:
         response = ping(ip, timeout=1, unit='ms')
         if response is not None:
-            return round(response, 2)
+            return round(response, 3)
         return None
     except Exception:
         return None
@@ -270,7 +270,7 @@ def view_ping_responses(ip_id):
     return render_template('view.html', ip_info=ip_info, ping_responses=ping_responses, response_times=response_times, timestamps=timestamps)
 
 if __name__ == "__main__":
-    create_tables()  # Create all tables in the same database
+    create_tables()
     ping_thread = threading.Thread(target=ping_all_ips)
     ping_thread.daemon = True
     ping_thread.start()
