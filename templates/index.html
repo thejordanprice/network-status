@@ -63,7 +63,9 @@
             });
 
             document.querySelectorAll('.delete-btn').forEach(button => {
-                button.addEventListener('click', function () {
+                button.addEventListener('click', function (event) {
+                    event.preventDefault();
+
                     var ipId = button.getAttribute('data-ip-id');
                     var confirmDelete = confirm("Are you sure you want to delete this IP entry?");
                     if (confirmDelete && ipId) {
