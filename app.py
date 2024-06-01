@@ -193,7 +193,6 @@ def insert():
 def save_order():
     order = request.json.get('order')
     if order:
-        logging.debug(f"Received order: {order}")
         conn = sqlite3.connect(UI_DATABASE_FILE)
         cursor = conn.cursor()
         cursor.execute('DELETE FROM ui_settings')
@@ -205,6 +204,7 @@ def save_order():
         conn.commit()
         conn.close()
     return jsonify(status='success')
+
 
 @app.route('/ping_results', methods=['GET'])
 def latest_ping_results():
