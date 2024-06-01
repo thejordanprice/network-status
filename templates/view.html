@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>View Ping Responses</title>
+    <title>Network Status - View Host</title>
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
+{% include 'navbar.html' %}
     <div class="container">
         {% if ip_info %}
-        <h1 class="mt-5">Ping Responses for IP: {{ ip_info[0] }}</h1>
+        <h1 class="mt-5">Results: {{ ip_info[0] }}</h1>
         <table class="table table-striped mt-3">
             <thead>
                 <tr>
