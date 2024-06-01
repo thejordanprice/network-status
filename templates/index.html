@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Status</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var el = document.getElementById('ip-list');
+            var sortable = Sortable.create(el, {
+                onEnd: function (evt) {
+                    var order = sortable.toArray();
+                    fetch('/save_order', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ order: order }),
+                    });
+                },
+            });
+
+            function fetchPingStatus() {
+                fetch('/ping_status')
+                    .then(response => response.json())
+                    .then(data => {
+                        document.querySelectorAll('#ip-list tr').forEach(row => {
+                            const ip = row.getAttribute('data-ip');
+                            const statusCell = row.querySelector('.status-cell');
+                            if (data[ip] !== null) {
+                                statusCell.innerHTML = `<span class="badge badge-success">Online (${data[ip]} ms)</span>`;
+                            } else {
+                                statusCell.innerHTML = '<span class="badge badge-danger">Offline</span>';
+                            }
+                        });
+                    });
+            }
+
+            setInterval(fetchPingStatus, 5000);
+
+            document.querySelectorAll('.delete-btn').forEach(button => {
+              button.addEventListener('click', function () {
+                  var ipId = button.getAttribute('data-ip-id');
+                  var confirmDelete = confirm("Are you sure you want to delete this IP entry?");
+                  if (confirmDelete && ipId) {
+                      fetch('/delete/' + ipId, {
+                          method: 'POST',
+                          headers: {
+                              'Content-Type': 'application/json'
+                          }
+                      }).then(response => {
+                          if (response.ok) {
+                              console.log('IP entry deleted successfully');
+                              window.location.reload();
+                          } else {
+                              console.error('Failed to delete IP entry');
+                          }
+                      }).catch(error => {
+                          console.error('An error occurred:', error);
+                      });
+                  }
+              });
+          });
+
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mt-5">Network Status</h1>
+        <table class="table table-striped mt-3">
+            <thead>
+                <tr>
+                    <th scope="col">IP Address</th>
+                    <th scope="col">Hostname</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="ip-list">
+                {% for id, ip, hostname in ips %}
+                <tr data-id="{{ id }}" data-ip="{{ ip }}">
+                    <td>{{ ip }}</td>
+                    <td>{{ hostname }}</td>
+                    <td class="status-cell">
+                        {% if ping_results[ip] is not none %}
+                        <span class="badge badge-success">Online ({{ "%.2f" % ping_results[ip] }} ms)</span>
+                        {% else %}
+                        <span class="badge badge-danger">Offline</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <form action="{{ url_for('edit_ip', ip_id=id) }}" method="GET" style="display: inline;">
+                            <button type="submit" class="btn btn-sm btn-primary">Edit</button>
+                        </form>
+                        <button type="button" class="btn btn-sm btn-danger delete-btn" data-ip-id="{{ id }}">Delete</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="row justify-content-center">
+            <a href="{{ url_for('insert') }}" class="btn btn-primary mt-3">Insert New IP</a>
+        </div>
+    </div>
+</body>
+</html>
