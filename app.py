@@ -274,7 +274,11 @@ def view_ping_responses(ip_id):
     cursor.execute('SELECT response_time, timestamp FROM ping_responses WHERE ip_id = ? ORDER BY timestamp DESC', (ip_id,))
     ping_responses = cursor.fetchall()
     conn.close()
-    return render_template('view.html', ip_info=ip_info, ping_responses=ping_responses, ip_id=ip_id)
+
+    response_times = [response[0] for response in ping_responses]
+    timestamps = [datetime.fromtimestamp(response[1]).strftime('%Y-%m-%dT%H:%M:%S') for response in ping_responses]
+
+    return render_template('view.html', ip_info=ip_info, ping_responses=ping_responses, response_times=response_times, timestamps=timestamps)
 
 if __name__ == "__main__":
     create_table()
