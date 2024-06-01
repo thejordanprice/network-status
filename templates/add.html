@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Network Status - Insert IP</title>
+    <title>Network Status - Add Host</title>
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
+{% include 'navbar.html' %}
     <div class="container">
-        <h1 class="mt-5">Insert IP</h1>
+        <h1 class="mt-5">Add Host</h1>
         <form method="POST" action="{{ url_for('insert') }}">
             <div class="form-group">
                 <label for="ip">IP Address</label>
@@ -18,7 +19,11 @@
                 <label for="hostname">Hostname</label>
                 <input type="text" class="form-control" id="hostname" name="hostname">
             </div>
-            <button type="submit" class="btn btn-primary">Submit</button>
+            <div class="form-group">
+                <label for="category">Category</label>
+                <input type="text" class="form-control" id="category" name="category">
+            </div>
+            <button type="submit" class="btn btn-primary">Add Host</button>
         </form>
     </div>
 </body>

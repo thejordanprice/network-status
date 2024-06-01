@@ -41,50 +41,58 @@
 
             setInterval(fetchPingStatus, 5000);
 
-            document.querySelectorAll('.delete-btn').forEach(button => {
-              button.addEventListener('click', function () {
-                  var ipId = button.getAttribute('data-ip-id');
-                  var confirmDelete = confirm("Are you sure you want to delete this IP entry?");
-                  if (confirmDelete && ipId) {
-                      fetch('/delete/' + ipId, {
-                          method: 'POST',
-                          headers: {
-                              'Content-Type': 'application/json'
-                          }
-                      }).then(response => {
-                          if (response.ok) {
-                              console.log('IP entry deleted successfully');
-                              window.location.reload();
-                          } else {
-                              console.error('Failed to delete IP entry');
-                          }
-                      }).catch(error => {
-                          console.error('An error occurred:', error);
-                      });
-                  }
-              });
-          });
+            const categoryFilter = document.getElementById('category-filter');
+            const rows = document.querySelectorAll('#ip-list tr');
 
+            categoryFilter.addEventListener('change', function () {
+                const selectedCategory = categoryFilter.value;
+
+                rows.forEach(row => {
+                    const category = row.getAttribute('data-category');
+
+                    if (selectedCategory === '' || selectedCategory === category) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
         });
     </script>
+
 </head>
 <body>
+{% include 'navbar.html' %}
     <div class="container">
-        <h1 class="mt-5">Network Status</h1>
+        <h1 class="mt-5">Dashboard</h1>
+        <div class="input-group mt-3">
+            <div class="input-group-prepend">
+                <label class="input-group-text" for="category">Category:</label>
+            </div>
+            <select id="category-filter" class="form-control">
+                <option value="">All</option>
+                {% for category in categories %}
+                <option value="{{ category }}">{{ category }}</option>
+                {% endfor %}
+            </select>
+            <a href="{{ url_for('insert') }}" class="btn btn-primary ml-2">Add Host</a>
+        </div>
         <table class="table table-striped mt-3">
             <thead>
                 <tr>
                     <th scope="col">IP Address</th>
                     <th scope="col">Hostname</th>
+                    <th scope="col">Category</th>
                     <th scope="col">Status</th>
                     <th scope="col">Actions</th>
                 </tr>
             </thead>
             <tbody id="ip-list">
-                {% for id, ip, hostname in ips %}
-                <tr data-id="{{ id }}" data-ip="{{ ip }}">
+                {% for id, ip, hostname, category in ips %}
+                <tr data-id="{{ id }}" data-ip="{{ ip }}" data-category="{{ category }}">
                     <td>{{ ip }}</td>
                     <td>{{ hostname }}</td>
+                    <td>{{ category }}</td>
                     <td class="status-cell">
                         {% if ping_results[ip] is not none %}
                         <span class="badge badge-success">Online ({{ "%.2f" % ping_results[ip] }} ms)</span>
@@ -94,7 +102,7 @@
                     </td>
                     <td>
                         <form action="{{ url_for('edit_ip', ip_id=id) }}" method="GET" style="display: inline;">
-                            <button type="submit" class="btn btn-sm btn-primary">Edit</button>
+                            <button type="submit" class="btn btn-sm btn-secondary">Edit</button>
                         </form>
                         <button type="button" class="btn btn-sm btn-danger delete-btn" data-ip-id="{{ id }}">Delete</button>
                     </td>
@@ -103,7 +111,7 @@
             </tbody>
         </table>
         <div class="row justify-content-center">
-            <a href="{{ url_for('insert') }}" class="btn btn-primary mt-3">Insert New IP</a>
+            
         </div>
     </div>
 </body>

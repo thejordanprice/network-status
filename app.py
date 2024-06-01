@@ -13,7 +13,8 @@ def create_table():
         CREATE TABLE IF NOT EXISTS ip_addresses (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             ip TEXT NOT NULL,
-            hostname TEXT
+            hostname TEXT,
+            category TEXT
         )
     ''')
     conn.commit()
@@ -32,17 +33,28 @@ def create_ui_settings_table():
     conn.commit()
     conn.close()
 
-def insert_ip(ip: str, hostname: str):
+def insert_ip(ip: str, hostname: str, category: str):
     conn = sqlite3.connect(DATABASE_FILE)
     cursor = conn.cursor()
     cursor.execute('''
-        INSERT INTO ip_addresses (ip, hostname)
-        VALUES (?, ?)
-    ''', (ip, hostname))
+        INSERT INTO ip_addresses (ip, hostname, category)
+        VALUES (?, ?, ?)
+    ''', (ip, hostname, category))
     ip_id = cursor.lastrowid
     conn.commit()
     conn.close()
     insert_ui_setting(ip_id)
+
+def edit_ip(ip_id: int, new_ip: str, new_hostname: str, new_category: str):
+    conn = sqlite3.connect(DATABASE_FILE)
+    cursor = conn.cursor()
+    cursor.execute('''
+        UPDATE ip_addresses
+        SET ip = ?, hostname = ?, category = ?
+        WHERE id = ?
+    ''', (new_ip, new_hostname, new_category, ip_id))
+    conn.commit()
+    conn.close()
 
 def insert_ui_setting(ip_id: int):
     conn = sqlite3.connect(UI_DATABASE_FILE)
@@ -57,7 +69,7 @@ def insert_ui_setting(ip_id: int):
 def load_ips():
     conn = sqlite3.connect(DATABASE_FILE)
     cursor = conn.cursor()
-    cursor.execute('SELECT id, ip, hostname FROM ip_addresses')
+    cursor.execute('SELECT id, ip, hostname, category FROM ip_addresses')
     rows = cursor.fetchall()
     conn.close()
     return rows
@@ -71,7 +83,7 @@ def load_ordered_ips():
     ordered_ip_ids = ui_cursor.fetchall()
     ordered_ips = []
     for (ip_id,) in ordered_ip_ids:
-        cursor.execute('SELECT id, ip, hostname FROM ip_addresses WHERE id = ?', (ip_id,))
+        cursor.execute('SELECT id, ip, hostname, category FROM ip_addresses WHERE id = ?', (ip_id,))
         ip_info = cursor.fetchone()
         if ip_info:
             ordered_ips.append(ip_info)
@@ -91,17 +103,19 @@ def ping_ip(ip: str):
 @app.route('/')
 def index():
     ips = load_ordered_ips()
-    ping_results = {ip: ping_ip(ip) for _, ip, _ in ips}
-    return render_template('index.html', ips=ips, ping_results=ping_results)
+    categories = set(ip[3] for ip in ips)
+    ping_results = {ip: ping_ip(ip) for _, ip, _, _ in ips}
+    return render_template('index.html', ips=ips, ping_results=ping_results, categories=categories)
 
-@app.route('/insert', methods=['GET', 'POST'])
+@app.route('/add', methods=['GET', 'POST'])
 def insert():
     if request.method == 'POST':
         ip = request.form['ip']
         hostname = request.form['hostname']
-        insert_ip(ip, hostname)
+        category = request.form['category']
+        insert_ip(ip, hostname, category)
         return redirect(url_for('index'))
-    return render_template('insert.html')
+    return render_template('add.html')
 
 @app.route('/save_order', methods=['POST'])
 def save_order():
@@ -122,7 +136,7 @@ def save_order():
 @app.route('/ping_status', methods=['GET'])
 def ping_status():
     ips = load_ordered_ips()
-    ping_results = {ip: ping_ip(ip) for _, ip, _ in ips}
+    ping_results = {ip: ping_ip(ip) for _, ip, _, _ in ips} 
     return jsonify(ping_results)
 
 @app.route('/delete/<int:ip_id>', methods=['POST'])
@@ -139,19 +153,20 @@ def edit_ip(ip_id):
     if request.method == 'POST':
         new_ip = request.form['ip']
         new_hostname = request.form['hostname']
+        new_category = request.form['category']
         conn = sqlite3.connect(DATABASE_FILE)
         cursor = conn.cursor()
-        cursor.execute('UPDATE ip_addresses SET ip = ?, hostname = ? WHERE id = ?', (new_ip, new_hostname, ip_id))
+        cursor.execute('UPDATE ip_addresses SET ip = ?, hostname = ?, category = ? WHERE id = ?', (new_ip, new_hostname, new_category, ip_id))
         conn.commit()
         conn.close()
         return redirect(url_for('index'))
     else:
         conn = sqlite3.connect(DATABASE_FILE)
         cursor = conn.cursor()
-        cursor.execute('SELECT ip, hostname FROM ip_addresses WHERE id = ?', (ip_id,))
+        cursor.execute('SELECT ip, hostname, category FROM ip_addresses WHERE id = ?', (ip_id,))
         ip_info = cursor.fetchone()
         conn.close()
-        return render_template('edit.html', ip_id=ip_id, ip=ip_info[0], hostname=ip_info[1])
+        return render_template('edit.html', ip_id=ip_id, ip=ip_info[0], hostname=ip_info[1], category=ip_info[2])
 
 if __name__ == "__main__":
     create_table()
