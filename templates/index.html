@@ -113,6 +113,7 @@
                 <tr>
                     <th scope="col">IP Address</th>
                     <th scope="col">Hostname</th>
+                    <th scope="col">Category</th>
                     <th scope="col">Response Time (ms)</th>
                     <th scope="col">Last Checked</th>
                     <th scope="col">Actions</th>
@@ -123,6 +124,7 @@
                     <tr data-ip-id="{{ ip[0] }}" data-category="{{ ip[3] }}">
                         <td>{{ ip[1] }}</td>
                         <td>{{ ip[2] }}</td>
+                        <td>{{ ip[3] }}</td>
                         <td class="response-time-cell">{{ latest_ping_results[ip[0]]['response_time'] }}</td>
                         <td class="timestamp-cell">{{ latest_ping_results[ip[0]]['timestamp'] }}</td>
                         <td>
@@ -135,7 +137,7 @@
                     </tr>
                 {% endfor %}
             </tbody>
-        </table>
+        </table>        
     </div>
 </body>
 </html>
