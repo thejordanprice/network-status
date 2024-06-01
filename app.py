@@ -93,14 +93,14 @@ def load_ordered_ips():
     ui_cursor = ui_conn.cursor()
     ui_cursor.execute('SELECT ip_id FROM ui_settings ORDER BY rowid')
     ordered_ip_ids = ui_cursor.fetchall()
-    
+
     ordered_ips = []
     for (ip_id,) in ordered_ip_ids:
         cursor.execute('SELECT id, ip, hostname, category FROM ip_addresses WHERE id = ?', (ip_id,))
         ip_info = cursor.fetchone()
         if ip_info:
             ordered_ips.append(ip_info)
-    
+
     conn.close()
     ui_conn.close()
     
@@ -193,6 +193,7 @@ def insert():
 def save_order():
     order = request.json.get('order')
     if order:
+        logging.debug(f"Received order: {order}")
         conn = sqlite3.connect(UI_DATABASE_FILE)
         cursor = conn.cursor()
         cursor.execute('DELETE FROM ui_settings')

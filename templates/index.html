@@ -21,8 +21,9 @@
                         body: JSON.stringify({ order: order }),
                     });
                 },
+                dataIdAttr: 'data-ip-id'
             });
-
+            
             function fetchLatestPingResults() {
                 fetch('/ping_results')
                     .then(response => response.json())
