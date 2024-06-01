@@ -23,23 +23,26 @@
                 },
             });
 
-            function fetchPingStatus() {
-                fetch('/ping_status')
+            function fetchLatestPingResults() {
+                fetch('/ping_results')
                     .then(response => response.json())
                     .then(data => {
                         document.querySelectorAll('#ip-list tr').forEach(row => {
-                            const ip = row.getAttribute('data-ip');
-                            const statusCell = row.querySelector('.status-cell');
-                            if (data[ip] !== null) {
-                                statusCell.innerHTML = `<span class="badge badge-success">Online (${data[ip]} ms)</span>`;
+                            const ipId = row.getAttribute('data-ip-id');
+                            const responseTimeCell = row.querySelector('.response-time-cell');
+                            const timestampCell = row.querySelector('.timestamp-cell');
+                            if (data[ipId]) {
+                                responseTimeCell.textContent = data[ipId]['response_time'];
+                                timestampCell.textContent = data[ipId]['timestamp'];
                             } else {
-                                statusCell.innerHTML = '<span class="badge badge-danger">Offline</span>';
+                                responseTimeCell.textContent = 'No data';
+                                timestampCell.textContent = 'No data';
                             }
                         });
                     });
             }
 
-            setInterval(fetchPingStatus, 5000);
+            setInterval(fetchLatestPingResults, 5000);
 
             const categoryFilter = document.getElementById('category-filter');
             const rows = document.querySelectorAll('#ip-list tr');
@@ -82,10 +85,9 @@
                 });
             });
 
-            
+            fetchLatestPingResults(); // Fetch initial data
         });
     </script>
-
 </head>
 <body>
 {% include 'navbar.html' %}
@@ -108,31 +110,26 @@
                 <tr>
                     <th scope="col">IP Address</th>
                     <th scope="col">Hostname</th>
-                    <th scope="col">Category</th>
-                    <th scope="col">Status</th>
+                    <th scope="col">Response Time (ms)</th>
+                    <th scope="col">Last Checked</th>
                     <th scope="col">Actions</th>
                 </tr>
             </thead>
             <tbody id="ip-list">
-                {% for id, ip, hostname, category in ips %}
-                <tr data-id="{{ id }}" data-ip="{{ ip }}" data-category="{{ category }}">
-                    <td>{{ ip }}</td>
-                    <td>{{ hostname }}</td>
-                    <td>{{ category }}</td>
-                    <td class="status-cell">
-                        {% if ping_results[ip] is not none %}
-                        <span class="badge badge-success">Online ({{ "%.2f" % ping_results[ip] }} ms)</span>
-                        {% else %}
-                        <span class="badge badge-danger">Offline</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <form action="{{ url_for('edit_ip', ip_id=id) }}" method="GET" style="display: inline;">
-                            <button type="submit" class="btn btn-sm btn-secondary">Edit</button>
-                        </form>
-                        <button type="button" class="btn btn-sm btn-danger delete-btn" data-ip-id="{{ id }}">Delete</button>
-                    </td>
-                </tr>
+                {% for ip in ips %}
+                    <tr data-ip-id="{{ ip[0] }}" data-category="{{ ip[3] }}">
+                        <td>{{ ip[1] }}</td>
+                        <td>{{ ip[2] }}</td>
+                        <td class="response-time-cell">{{ latest_ping_results[ip[0]]['response_time'] }}</td>
+                        <td class="timestamp-cell">{{ latest_ping_results[ip[0]]['timestamp'] }}</td>
+                        <td>
+                            <a href="{{ url_for('edit_ip', ip_id=ip[0]) }}" class="btn btn-warning btn-sm">Edit</a>
+                            <form action="{{ url_for('delete_ip', ip_id=ip[0]) }}" method="post" style="display:inline;">
+                                <button type="submit" class="btn btn-danger btn-sm delete-btn" data-ip-id="{{ ip[0] }}">Delete</button>
+                            </form>
+                            <a href="{{ url_for('view_ping_responses', ip_id=ip[0]) }}" class="btn btn-info btn-sm">View</a>
+                        </td>
+                    </tr>
                 {% endfor %}
             </tbody>
         </table>

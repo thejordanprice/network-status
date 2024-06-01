@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Ping Responses</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        {% if ip_info %}
+        <h1 class="mt-5">Ping Responses for IP: {{ ip_info[0] }}</h1>
+        <table class="table table-striped mt-3">
+            <thead>
+                <tr>
+                    <th scope="col">Response Time (ms)</th>
+                    <th scope="col">Timestamp</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for response_time, timestamp in ping_responses %}
+                <tr>
+                    <td>{{ response_time }}</td>
+                    <td>{{ timestamp|datetimeformat }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <a href="{{ url_for('index') }}" class="btn btn-primary">Back to Dashboard</a>
+        {% else %}
+        <div class="alert alert-danger mt-5" role="alert">
+            IP Address not found or no historical ping responses available.
+        </div>
+        <a href="{{ url_for('index') }}" class="btn btn-primary mt-3">Back to Dashboard</a>
+        {% endif %}
+    </div>
+</body>
+</html>
