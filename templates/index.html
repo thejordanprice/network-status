@@ -23,7 +23,7 @@
                 },
                 dataIdAttr: 'data-ip-id'
             });
-            
+
             function fetchLatestPingResults() {
                 fetch('/ping_results')
                     .then(response => response.json())
@@ -86,7 +86,7 @@
                 });
             });
 
-            fetchLatestPingResults(); // Fetch initial data
+            fetchLatestPingResults();
         });
     </script>
 </head>
