@@ -23,7 +23,7 @@
                 },
                 dataIdAttr: 'data-ip-id'
             });
-
+    
             function fetchLatestPingResults() {
                 fetch('/ping_results')
                     .then(response => response.json())
@@ -42,18 +42,18 @@
                         });
                     });
             }
-
+    
             setInterval(fetchLatestPingResults, 5000);
-
+    
             const categoryFilter = document.getElementById('category-filter');
             const rows = document.querySelectorAll('#ip-list tr');
-
+    
             categoryFilter.addEventListener('change', function () {
                 const selectedCategory = categoryFilter.value;
-
+    
                 rows.forEach(row => {
                     const category = row.getAttribute('data-category');
-
+    
                     if (selectedCategory === '' || selectedCategory === category) {
                         row.style.display = '';
                     } else {
@@ -61,11 +61,11 @@
                     }
                 });
             });
-
+    
             document.querySelectorAll('.delete-btn').forEach(button => {
                 button.addEventListener('click', function (event) {
                     event.preventDefault();
-
+    
                     var ipId = button.getAttribute('data-ip-id');
                     var confirmDelete = confirm("Are you sure you want to delete this IP entry?");
                     if (confirmDelete && ipId) {
@@ -87,10 +87,60 @@
                     }
                 });
             });
-
+    
+            // Sorting functionality
+            document.querySelectorAll('.sortable-header').forEach(header => {
+                header.addEventListener('click', function () {
+                    const column = this.dataset.column;
+                    const order = this.dataset.order;
+                    const sortedRows = Array.from(rows);
+    
+                    const arrowUp = this.querySelector('.arrow-up');
+                    const arrowDown = this.querySelector('.arrow-down');
+    
+                    // Toggle sorting order
+                    this.dataset.order = order === 'asc' ? 'desc' : 'asc';
+    
+                    // Remove arrows from other headers
+                    document.querySelectorAll('.arrow-up').forEach(arrow => arrow.classList.remove('d-none'));
+                    document.querySelectorAll('.arrow-down').forEach(arrow => arrow.classList.remove('d-none'));
+    
+                    if (order === 'asc') {
+                        arrowUp.classList.remove('d-none');
+                        arrowDown.classList.add('d-none');
+                    } else {
+                        arrowUp.classList.add('d-none');
+                        arrowDown.classList.remove('d-none');
+                    }
+    
+                    // Sorting
+                    const sortedRowsArray = sortedRows.sort((a, b) => {
+                        const aValue = a.querySelector(`.${column}-cell`).textContent.trim();
+                        const bValue = b.querySelector(`.${column}-cell`).textContent.trim();
+    
+                        if (column === 'ip') {
+                            return order === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+                        } else {
+                            return order === 'asc' ? parseFloat(aValue) - parseFloat(bValue) : parseFloat(bValue) - parseFloat(aValue);
+                        }
+                    });
+    
+                    // Reorder rows
+                    el.innerHTML = '';
+                    sortedRowsArray.forEach(row => el.appendChild(row));
+                });
+            });
+    
             fetchLatestPingResults();
         });
     </script>
+    <style>
+        .arrow-up,
+        .arrow-down {
+            display: inline;
+            font-size: 10px; /* Adjust the size of the triangles */
+        }
+    </style>   
 </head>
 <body>
 {% include 'navbar.html' %}
@@ -98,7 +148,7 @@
         <h1 class="mt-5">Dashboard</h1>
         <div class="input-group mt-3">
             <div class="input-group-prepend">
-                <label class="input-group-text" for="category">Category</label>
+                <label class="input-group-text" for="category">Filter</label>
             </div>
             <select id="category-filter" class="form-control">
                 <option value="">All</option>
@@ -111,10 +161,10 @@
         <table class="table table-striped mt-3">
             <thead>
                 <tr>
-                    <th scope="col">IP Address</th>
+                    <th scope="col" class="sortable-header" data-column="ip" data-order="asc">IP Address <span class="arrow-up">&#x25B2;</span><span class="arrow-down">&#x25BC;</span></th>
                     <th scope="col">Hostname</th>
-                    <th scope="col">Category</th>
-                    <th scope="col">Response Time (ms)</th>
+                    <th scope="col" class="sortable-header" data-column="category" data-order="asc">Category <span class="arrow-up">&#x25B2;</span><span class="arrow-down">&#x25BC;</span></th>
+                    <th scope="col" class="sortable-header" data-column="response-time" data-order="asc">Response Time (ms) <span class="arrow-up">&#x25B2;</span><span class="arrow-down">&#x25BC;</span></th>
                     <th scope="col">Last Checked</th>
                     <th scope="col">Actions</th>
                 </tr>
@@ -122,7 +172,7 @@
             <tbody id="ip-list">
                 {% for ip in ips %}
                     <tr data-ip-id="{{ ip[0] }}" data-category="{{ ip[3] }}">
-                        <td>{{ ip[1] }}</td>
+                        <td class="ip-cell">{{ ip[1] }}</td>
                         <td>{{ ip[2] }}</td>
                         <td>{{ ip[3] }}</td>
                         <td class="response-time-cell">{{ latest_ping_results[ip[0]]['response_time'] }}</td>
