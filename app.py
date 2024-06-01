@@ -6,10 +6,9 @@ import threading
 from datetime import datetime
 
 app = Flask(__name__)
-DATABASE_FILE = 'ping_monitor.db'
-UI_DATABASE_FILE = 'ui_settings.db'
+DATABASE_FILE = 'network-status.db'
 
-def create_table():
+def create_tables():
     conn = sqlite3.connect(DATABASE_FILE)
     cursor = conn.cursor()
     cursor.execute('''
@@ -29,12 +28,6 @@ def create_table():
             FOREIGN KEY (ip_id) REFERENCES ip_addresses(id)
         )
     ''')
-    conn.commit()
-    conn.close()
-
-def create_ui_settings_table():
-    conn = sqlite3.connect(UI_DATABASE_FILE)
-    cursor = conn.cursor()
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS ui_settings (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -69,7 +62,7 @@ def edit_ip(ip_id: int, new_ip: str, new_hostname: str, new_category: str):
     conn.close()
 
 def insert_ui_setting(ip_id: int):
-    conn = sqlite3.connect(UI_DATABASE_FILE)
+    conn = sqlite3.connect(DATABASE_FILE)
     cursor = conn.cursor()
     cursor.execute('''
         INSERT INTO ui_settings (ip_id)
@@ -88,11 +81,9 @@ def load_ips():
 
 def load_ordered_ips():
     conn = sqlite3.connect(DATABASE_FILE)
-    ui_conn = sqlite3.connect(UI_DATABASE_FILE)
     cursor = conn.cursor()
-    ui_cursor = ui_conn.cursor()
-    ui_cursor.execute('SELECT ip_id FROM ui_settings ORDER BY rowid')
-    ordered_ip_ids = ui_cursor.fetchall()
+    cursor.execute('SELECT ip_id FROM ui_settings ORDER BY rowid')
+    ordered_ip_ids = cursor.fetchall()
 
     ordered_ips = []
     for (ip_id,) in ordered_ip_ids:
@@ -102,7 +93,6 @@ def load_ordered_ips():
             ordered_ips.append(ip_info)
 
     conn.close()
-    ui_conn.close()
     
     return ordered_ips
 
@@ -193,7 +183,7 @@ def insert():
 def save_order():
     order = request.json.get('order')
     if order:
-        conn = sqlite3.connect(UI_DATABASE_FILE)
+        conn = sqlite3.connect(DATABASE_FILE)
         cursor = conn.cursor()
         cursor.execute('DELETE FROM ui_settings')
         for idx, ip_id in enumerate(order):
@@ -204,7 +194,6 @@ def save_order():
         conn.commit()
         conn.close()
     return jsonify(status='success')
-
 
 @app.route('/ping_results', methods=['GET'])
 def latest_ping_results():
@@ -281,8 +270,7 @@ def view_ping_responses(ip_id):
     return render_template('view.html', ip_info=ip_info, ping_responses=ping_responses, response_times=response_times, timestamps=timestamps)
 
 if __name__ == "__main__":
-    create_table()
-    create_ui_settings_table()
+    create_tables()  # Create all tables in the same database
     ping_thread = threading.Thread(target=ping_all_ips)
     ping_thread.daemon = True
     ping_thread.start()
