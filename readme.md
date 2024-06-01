@@ -34,7 +34,7 @@ Network Status is a simple web application that allows users to monitor the onli
 
 4. Access the application in your web browser:
 
-```http://localhost:5000```
+```http://localhost:8000```
 
 ## Usage
 
