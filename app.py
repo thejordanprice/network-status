@@ -229,10 +229,19 @@ def latest_ping_results():
 def delete_ip(ip_id):
     conn = sqlite3.connect(DATABASE_FILE)
     cursor = conn.cursor()
-    cursor.execute('DELETE FROM ip_addresses WHERE id = ?', (ip_id,))
-    conn.commit()
-    conn.close()
-    return redirect(url_for('index'))
+    try:
+        cursor.execute('BEGIN TRANSACTION')
+        cursor.execute('DELETE FROM ip_addresses WHERE id = ?', (ip_id,))
+        cursor.execute('DELETE FROM ping_responses WHERE ip_id = ?', (ip_id,))
+        cursor.execute('DELETE FROM ui_settings WHERE ip_id = ?', (ip_id,))
+        conn.commit()
+        return redirect(url_for('index'))
+    except Exception as e:
+        conn.rollback()
+        print("Error:", e)
+    finally:
+        conn.close()
+
 
 @app.route('/edit/<int:ip_id>', methods=['GET', 'POST'])
 def edit_ip(ip_id):
