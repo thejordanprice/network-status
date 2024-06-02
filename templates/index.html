@@ -79,11 +79,7 @@
                             if (response.ok) {
                                 console.log('IP entry deleted successfully');
                                 window.location.reload();
-                            } else {
-                                console.error('Failed to delete IP entry');
                             }
-                        }).catch(error => {
-                            console.error('An error occurred:', error);
                         });
                     }
                 });
@@ -139,7 +135,7 @@
         .arrow-up,
         .arrow-down {
             display: inline;
-            font-size: 10px; /* Adjust the size of the triangles */
+            font-size: 10px;
         }
         .sortable-header {
             cursor: pointer;
