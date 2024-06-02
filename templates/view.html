@@ -14,7 +14,25 @@
     <div class="container">
         <h1 class="mt-5">{{ ip_info[0] }} ({{ ip_info[1] }})</h1>
         <canvas id="pingChart" width="400" height="200"></canvas>
-        <a href="{{ url_for('index') }}" class="btn btn-primary mt-3">Back to Dashboard</a>
+        <h2 class="mt-5">Response Times</h2>
+        <div class="table-responsive">
+            <table class="table table-striped mt-3">
+                <thead>
+                    <tr>
+                        <th scope="col">Timestamp</th>
+                        <th scope="col">Response Time (ms)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for i in range(timestamps|length) %}
+                    <tr>
+                        <td>{{ timestamps[i] }}</td>
+                        <td>{{ response_times[i] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -24,7 +42,7 @@
                 data: {
                     labels: {{ timestamps|tojson }},
                     datasets: [{
-                        label: 'Ping Response Time (ms)',
+                        label: 'Response Time (ms)',
                         data: {{ response_times|tojson }},
                         backgroundColor: 'rgba(75, 192, 192, 0.2)',
                         borderColor: 'rgba(75, 192, 192, 1)',

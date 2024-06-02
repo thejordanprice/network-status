@@ -11,21 +11,31 @@
 <div class="container">
     <h1 class="mt-5">Edit Host</h1>
     <form method="POST">
-        <div class="form-group">
-            <label for="ip">IP Address</label>
+        <div class="input-group mt-3">
+            <div class="input-group-prepend">
+                <label class="input-group-text" for="ip">IP Address</label>
+            </div>
             <input type="text" class="form-control" id="ip" name="ip" value="{{ ip }}" required>
         </div>
-        <div class="form-row">
-            <div class="form-group col-md-6">
-                <label for="hostname">Hostname</label>
-                <input type="text" class="form-control" id="hostname" name="hostname" value="{{ hostname }}">
+        <div class="form-row mt-3">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <label class="input-group-text" for="hostname">Hostname</label>
+                    </div>
+                    <input type="text" class="form-control" id="hostname" name="hostname" value="{{ hostname }}">
+                </div>
             </div>
-            <div class="form-group col-md-6">
-                <label for="category">Category</label>
-                <input type="text" class="form-control" id="category" name="category" value="{{ category }}">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <label class="input-group-text" for="category">Category</label>
+                    </div>
+                    <input type="text" class="form-control" id="category" name="category" value="{{ category }}">
+                </div>
             </div>
         </div>
-        <button type="submit" class="btn btn-primary">Save Host</button>
+        <button type="submit" class="btn btn-primary mt-3">Save Host</button>
     </form>
 </div>
 </body>
