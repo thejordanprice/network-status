@@ -118,7 +118,7 @@
                         const aValue = a.querySelector(`.${column}-cell`).textContent.trim();
                         const bValue = b.querySelector(`.${column}-cell`).textContent.trim();
     
-                        if (column === 'ip') {
+                        if (column === 'ip' || column === 'hostname' || column === 'category') {
                             return order === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
                         } else {
                             return order === 'asc' ? parseFloat(aValue) - parseFloat(bValue) : parseFloat(bValue) - parseFloat(aValue);
@@ -139,6 +139,9 @@
         .arrow-down {
             display: inline;
             font-size: 10px; /* Adjust the size of the triangles */
+        }
+        .sortable-header {
+            cursor: pointer;
         }
     </style>   
 </head>
@@ -162,9 +165,9 @@
             <thead>
                 <tr>
                     <th scope="col" class="sortable-header" data-column="ip" data-order="asc">IP Address <span class="arrow-up">&#x25B2;</span><span class="arrow-down">&#x25BC;</span></th>
-                    <th scope="col">Hostname</th>
+                    <th scope="col" class="sortable-header" data-column="hostname" data-order="asc">Hostname <span class="arrow-up">&#x25B2;</span><span class="arrow-down">&#x25BC;</span></th>
                     <th scope="col" class="sortable-header" data-column="category" data-order="asc">Category <span class="arrow-up">&#x25B2;</span><span class="arrow-down">&#x25BC;</span></th>
-                    <th scope="col" class="sortable-header" data-column="response-time" data-order="asc">Response Time (ms) <span class="arrow-up">&#x25B2;</span><span class="arrow-down">&#x25BC;</span></th>
+                    <th scope="col" class="sortable-header" data-column="response-time" data-order="asc">Latency (ms) <span class="arrow-up">&#x25B2;</span><span class="arrow-down">&#x25BC;</span></th>
                     <th scope="col">Last Checked</th>
                     <th scope="col">Actions</th>
                 </tr>
@@ -173,7 +176,7 @@
                 {% for ip in ips %}
                     <tr data-ip-id="{{ ip[0] }}" data-category="{{ ip[3] }}">
                         <td class="ip-cell">{{ ip[1] }}</td>
-                        <td>{{ ip[2] }}</td>
+                        <td class="hostname-cell">{{ ip[2] }}</td>
                         <td>{{ ip[3] }}</td>
                         <td class="response-time-cell">{{ latest_ping_results[ip[0]]['response_time'] }}</td>
                         <td class="timestamp-cell">{{ latest_ping_results[ip[0]]['timestamp'] }}</td>
