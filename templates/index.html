@@ -14,7 +14,7 @@
             var sortable = Sortable.create(el, {
                 onEnd: function (evt) {
                     var order = sortable.toArray();
-                    fetch('/save_order', {
+                    fetch('/save', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -26,7 +26,7 @@
             });
     
             function fetchLatestPingResults() {
-                fetch('/ping_results')
+                fetch('/results')
                     .then(response => response.json())
                     .then(data => {
                         document.querySelectorAll('#ip-list tr').forEach(row => {

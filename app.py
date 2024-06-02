@@ -179,7 +179,7 @@ def insert():
         return redirect(url_for('index'))
     return render_template('add.html')
 
-@app.route('/save_order', methods=['POST'])
+@app.route('/save', methods=['POST'])
 def save_order():
     order = request.json.get('order')
     if order:
@@ -195,7 +195,7 @@ def save_order():
         conn.close()
     return jsonify(status='success')
 
-@app.route('/ping_results', methods=['GET'])
+@app.route('/results', methods=['GET'])
 def latest_ping_results():
     ips = load_ordered_ips()
     latest_ping_results = {}
